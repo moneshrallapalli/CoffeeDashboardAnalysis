@@ -1389,27 +1389,45 @@ def update_import_charts(selected_year):
 )
 def update_export_charts(selected_year):
     year_str = str(selected_year)
-    
+
     # Handle missing values in export data
     export_data_clean = export_data.replace(-2147483648, np.nan)
-    
+
     # 1. Treemap for exports by country
     export_latest = export_data_clean[['Country', year_str]].copy()
     export_latest = export_latest[export_latest[year_str].notna()]
+    export_latest = export_latest[export_latest[year_str] > 0]  # Filter out zero values
     export_latest.columns = ['Country', 'Value']
-    
+
     # Print data totals for verification
     print(f"Total export for {year_str}: {export_latest['Value'].sum():,.0f}")
-    
-    # Create treemap
-    treemap_fig = px.treemap(
-        export_latest, 
-        path=['Country'], 
-        values='Value',
-        color='Value',
-        color_continuous_scale=COFFEE_COLORSCALE,
-        title=f'Coffee Export by Country ({year_str})'
-    )
+
+    # Create treemap - with better error handling
+    if len(export_latest) > 0 and export_latest['Value'].sum() > 0:
+        treemap_fig = px.treemap(
+            export_latest,
+            path=['Country'],
+            values='Value',
+            color='Value',
+            color_continuous_scale=COFFEE_COLORSCALE,
+            title=f'Coffee Export by Country ({year_str})'
+        )
+    else:
+        # Empty treemap if no data
+        treemap_fig = go.Figure()
+        treemap_fig.add_annotation(
+            text=f"No export data available for {year_str}",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            showarrow=False,
+            font=dict(size=14, color=COFFEE_COLORS['dark_brown'])
+        )
+        treemap_fig.update_layout(
+            title=f'Coffee Export by Country ({year_str})',
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False)
+        )
+
     treemap_fig.update_layout(
         font_color=COFFEE_COLORS['text'],
         paper_bgcolor=COFFEE_COLORS['background'],
@@ -1448,23 +1466,44 @@ def update_export_charts(selected_year):
     top_export_data = export_data_clean[export_data_clean['Country'].isin(top_exporters)]
     radial_data = top_export_data[['Country', year_str]].copy()
     radial_data.columns = ['Country', 'Value']
-    
-    # Remove NaN values
+
+    # Remove NaN values and zero values
     radial_data = radial_data.dropna()
-    
-    # Add "Others" category
-    other_countries = export_data_clean[~export_data_clean['Country'].isin(top_exporters)]
-    other_value = other_countries[year_str].sum()
-    radial_data = pd.concat([radial_data, pd.DataFrame([{'Country': 'Others', 'Value': other_value}])])
-    
-    radial_fig = px.pie(
-        radial_data,
-        names='Country', 
-        values='Value',
-        hole=0.4,
-        title=f'Top 10 Coffee Exporters ({year_str})',
-        color_discrete_sequence=COFFEE_COLORSCALE
-    )
+    radial_data = radial_data[radial_data['Value'] > 0]
+
+    # Add "Others" category if there's any data
+    if len(radial_data) > 0:
+        other_countries = export_data_clean[~export_data_clean['Country'].isin(top_exporters)]
+        other_value = other_countries[year_str].sum()
+        if other_value > 0:
+            radial_data = pd.concat([radial_data, pd.DataFrame([{'Country': 'Others', 'Value': other_value}])])
+
+    # Create pie chart with data validation
+    if len(radial_data) > 0 and radial_data['Value'].sum() > 0:
+        radial_fig = px.pie(
+            radial_data,
+            names='Country',
+            values='Value',
+            hole=0.4,
+            title=f'Top 10 Coffee Exporters ({year_str})',
+            color_discrete_sequence=COFFEE_COLORSCALE
+        )
+    else:
+        # Empty pie chart if no data
+        radial_fig = go.Figure()
+        radial_fig.add_annotation(
+            text=f"No export data available for {year_str}",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            showarrow=False,
+            font=dict(size=14, color=COFFEE_COLORS['dark_brown'])
+        )
+        radial_fig.update_layout(
+            title=f'Top 10 Coffee Exporters ({year_str})',
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False)
+        )
+
     radial_fig.update_layout(
         font_color=COFFEE_COLORS['text'],
         paper_bgcolor=COFFEE_COLORS['background'],
