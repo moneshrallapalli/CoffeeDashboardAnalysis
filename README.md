@@ -415,12 +415,6 @@ Contributions are welcome! Areas for enhancement:
 
 ---
 
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
 
 ## 🔗 Resources & Documentation
 
@@ -435,11 +429,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 📞 Questions or Feedback?
 
 If you have questions about the project or would like to discuss data visualization, analytics, or Python development, feel free to reach out!
+Email: moneshrallapalli@gmail.com
 
 ---
 
 **Last Updated:** October 30, 2024
 **Project Status:** Complete & Production-Ready ✅
-**Lines of Code:** 1,800+
 **Data Points Processed:** 10,000+
 **Visualizations:** 15+ interactive charts
+
